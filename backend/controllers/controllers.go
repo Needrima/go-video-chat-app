@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -55,5 +56,21 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	room = append(room, ws)
+
+	go func(ws *websocket.Conn, roomId string) {
+		for {
+			msg := BroadCastMessage{}
+			if err := ws.ReadJSON(&msg.msg); err != nil {
+				log.Println("err reading from websocket connection:", err.Error())
+				ws.Close()
+				return
+			}
+
+			msg.conn = ws
+			msg.roomID = roomId
+
+			BroadcastChan <- msg
+		}
+	}(ws, roomID)
 
 }

@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"go-react-video-chat-backend/controllers"
 	"go-react-video-chat-backend/routes"
 	"log"
 	"net/http"
 )
 
 func main() {
+	go controllers.BroadCastMessageToRoom()
+
 	router := routes.NewRouter()
 
 	fmt.Println("serving on port 8080....")
