@@ -18,11 +18,10 @@ var upgrader = websocket.Upgrader{
 }
 
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
-	roomID := createRoom()
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	mu.Lock()
+	roomID := generateID()
 	rooms[roomID] = []*websocket.Conn{}
-	mu.Unlock()
 
 	json.NewEncoder(w).Encode(map[string]string{
 		"roomID": roomID,
@@ -30,9 +29,12 @@ func CreateRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func JoinRoom(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	roomID := mux.Vars(r)["room_id"]
 
 	if len(roomID) != 6 {
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "invalid room id",
 		})
@@ -41,6 +43,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 	room, ok := rooms[roomID]
 	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "invalid room id",
 		})
@@ -63,6 +66,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 			if err := ws.ReadJSON(&msg.msg); err != nil {
 				log.Println("err reading from websocket connection:", err.Error())
 				ws.Close()
+				go deleteFromRoom(ws, roomId)
 				return
 			}
 
