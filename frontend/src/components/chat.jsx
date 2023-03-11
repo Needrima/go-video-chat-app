@@ -1,10 +1,11 @@
 import React from 'react'
 import { useRef } from 'react'
 import { useEffect } from 'react'
-import {useParams} from 'react-router-dom'
+import {useNavigate, useParams} from 'react-router-dom'
 
 const Chat = () => {
   const roomID = useParams()['roomID'];
+  const navigate = useNavigate();
   const localVid = useRef();
   const remoteVid = useRef();
   
@@ -17,12 +18,26 @@ const Chat = () => {
     setUpstream();
 
     const ws = new WebSocket(`ws://localhost:8080/join_room/${roomID}`);
+    ws.addEventListener('error', (error) => {
+      console.log('websocket error', error)
+      alert('something went wrong redirecting to home page')
+      navigate('/')
+    })
+
     ws.addEventListener('open', () => {
-      console.log("connection open")
       ws.send(JSON.stringify({
         "join": true,
       }))
     })
+
+    ws.addEventListener('message', (msg) => {
+      console.log(msg.data)
+    })
+
+    ws.addEventListener('close', () => {
+      localVid.current.srcObject = null;
+    })
+
   }, [])
 
   return (

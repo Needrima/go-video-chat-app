@@ -25,9 +25,19 @@ func (r *Rooms) Init() {
 
 // deleteFromRoom deletes connection ws from room with id roomId
 func (r *Rooms) DeleteRoom(id string) {
-	// r.mu.Lock()
-	// defer r.mu.Unlock()
 	delete(r.rooms, id)
+}
+
+func (r *Rooms) DeleteParticipant(id string, ws *websocket.Conn) {
+	room := r.rooms[id]
+
+	for participant, _ := range room {
+		if participant.Conn == ws {
+			log.Println("deleting participant with connection")
+			delete(room, participant)
+			return
+		}
+	}
 }
 
 func (r *Rooms) CreateRoom() string {
@@ -70,7 +80,7 @@ func BroadCastMessageToRoom() {
 			if participant.Conn != msg.conn {
 				if err := participant.Conn.WriteJSON(msg.msg); err != nil {
 					log.Println("writing to message to connection err:", err)
-					// participant.Conn.Close()
+					participant.Conn.Close()
 				}
 			}
 		}

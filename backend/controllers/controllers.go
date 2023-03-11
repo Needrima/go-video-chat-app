@@ -55,7 +55,16 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 			msg := BroadCastMessage{}
 			if err := ws.ReadJSON(&msg.msg); err != nil {
 				log.Println("err reading from websocket connection:", err.Error())
-				continue
+
+				Allroom.DeleteParticipant(id, ws)
+
+				BroadcastChan <- BroadCastMessage{
+					roomID: id,
+					msg: map[string]interface{}{
+						"left": "a user left the chat",
+					},
+				}
+				return
 			}
 
 			msg.conn = ws
