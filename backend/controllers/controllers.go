@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -19,9 +20,10 @@ var upgrader = websocket.Upgrader{
 
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	log.Println("endpoint hit")
 
-	roomID := generateID()
-	rooms[roomID] = []*websocket.Conn{}
+	roomID := Allroom.CreateRoom()
+	log.Println(roomID)
 
 	json.NewEncoder(w).Encode(map[string]string{
 		"roomID": roomID,
@@ -32,21 +34,8 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	roomID := mux.Vars(r)["room_id"]
-
-	if len(roomID) != 6 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"error": "invalid room id",
-		})
-		return
-	}
-
-	room, ok := rooms[roomID]
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"error": "invalid room id",
-		})
+	if len(roomID) == 0 {
+		log.Println("invalid id")
 		return
 	}
 
@@ -58,23 +47,25 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room = append(room, ws)
+	fmt.Println("adding connection to room with ID:", roomID)
+	Allroom.AddToRoom(roomID, ws)
 
-	go func(ws *websocket.Conn, roomId string) {
+	go func(ws *websocket.Conn, id string) {
 		for {
 			msg := BroadCastMessage{}
 			if err := ws.ReadJSON(&msg.msg); err != nil {
 				log.Println("err reading from websocket connection:", err.Error())
-				ws.Close()
-				go deleteFromRoom(ws, roomId)
-				return
+				continue
 			}
 
 			msg.conn = ws
-			msg.roomID = roomId
+			msg.roomID = roomID
+
+			fmt.Println(msg)
 
 			BroadcastChan <- msg
 		}
 	}(ws, roomID)
 
+	BroadCastMessageToRoom()
 }

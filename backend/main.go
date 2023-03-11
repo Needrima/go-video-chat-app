@@ -9,10 +9,9 @@ import (
 )
 
 func main() {
-	go controllers.BroadCastMessageToRoom()
+	controllers.Allroom.Init()
 
 	router := routes.NewRouter()
-
 	fmt.Println("serving on port 8080....")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
