@@ -61,7 +61,8 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 				BroadcastChan <- BroadCastMessage{
 					roomID: id,
 					msg: map[string]interface{}{
-						"left": "a user left the chat",
+						"type": "left",
+						"left": true,
 					},
 				}
 				return
