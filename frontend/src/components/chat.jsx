@@ -1,7 +1,9 @@
 import React from 'react'
+import { useState } from 'react'
 import { useRef } from 'react'
 import { useEffect } from 'react'
 import {useNavigate, useParams} from 'react-router-dom'
+import './style.scss'
 
 const Chat = () => {
   const roomID = useParams()['roomID'];
@@ -11,6 +13,27 @@ const Chat = () => {
   const remoteVid = useRef();
   const ws = useRef();
   const peerRef = useRef();
+
+  const [deviceState, setDeviceState] = useState({
+    mic: true,
+    cam: true,
+  })
+
+  const {mic, cam} = deviceState;
+
+  const toggleMicrophone = () => {
+    setDeviceState(state => ({
+      ...state,
+      mic: !state.mic,
+    }))
+  }
+
+  const toggleCamera= () => {
+    setDeviceState(state => ({
+      ...state,
+      cam: !state.cam,
+    }))
+  }
   
   useEffect(() => {
     setupStream();
@@ -140,12 +163,19 @@ const Chat = () => {
   return (
     <div className='container-fluid'>
       <div className="row justify-content-between">
-        <div className="col d-flex justify-content-center">
-          <video autoPlay muted controls ref={localVid} style={{width:'100%', height: '800px'}} />
+        <div className="col d-flex flex-column justify-content-center align-items-center">
+          <video autoPlay muted ref={localVid} style={{width:'100%'}} />
+
+          <div className='device-controls mt-4'>
+            {mic && <i className="bi bi-mic-fill display-3 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleMicrophone}></i>}
+            {!mic && <i className="bi bi-mic-mute-fill display-3 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleMicrophone}></i>}
+            {cam && <i className="bi bi-camera-video-fill display-3 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleCamera}></i>}
+            {!cam && <i className="bi bi-camera-video-off-fill display-3 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleCamera}></i>}
+          </div>
         </div>
 
         <div className="col d-flex justify-content-center">
-          <video autoPlay muted controls ref={remoteVid} style={{width:'100%', height: '800px'}} />
+          <video autoPlay muted ref={remoteVid} style={{width:'100%'}} />
         </div>
       </div>
     </div>
