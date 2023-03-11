@@ -171,6 +171,7 @@ const Chat = () => {
             {!mic && <i className="bi bi-mic-mute-fill display-3 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleMicrophone}></i>}
             {cam && <i className="bi bi-camera-video-fill display-3 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleCamera}></i>}
             {!cam && <i className="bi bi-camera-video-off-fill display-3 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleCamera}></i>}
+            <i class="bi bi-telephone-fill display-3 text-light p-3 rounded-circle bg-danger mx-4 device"></i>
           </div>
         </div>
 
