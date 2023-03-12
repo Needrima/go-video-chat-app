@@ -14,25 +14,53 @@ const Chat = () => {
   const ws = useRef();
   const peerRef = useRef();
 
-  const [deviceState, setDeviceState] = useState({
+  const [state, setState] = useState({
     mic: true,
     cam: true,
   })
 
-  const {mic, cam} = deviceState;
+  const {mic, cam} = state;
 
   const toggleMicrophone = () => {
-    setDeviceState(state => ({
-      ...state,
-      mic: !state.mic,
-    }))
+    const audio = localVid.current.getTracks().find(track => track.kind === 'audio')
+    if (audio.enabled) {
+      audio.enabled = false;
+      setState(state => ({
+        ...state,
+        mic: false,
+      }))
+    }else {
+      audio.enabled = true;
+      setState(state => ({
+        ...state,
+        mic: true,
+      }))
+    }
   }
 
-  const toggleCamera= () => {
-    setDeviceState(state => ({
-      ...state,
-      cam: !state.cam,
-    }))
+  const toggleCamera = () => {
+    const video = localVid.current.getTracks().find(track => track.kind === 'video')
+    if (video.enabled) {
+      video.enabled = false;
+      setState(state => ({
+        ...state,
+        cam: false,
+      }))
+    }else {
+      video.enabled = true;
+      setState(state => ({
+        ...state,
+        cam: true,
+      }))
+    }
+  }
+
+  const showRemoteStream = () => {
+    remoteVid.current.style.display = 'block'
+  }
+
+  const hideRemoteStream = () => {
+    remoteVid.current.style.display = 'none'
   }
   
   useEffect(() => {
@@ -45,9 +73,8 @@ const Chat = () => {
     localVid.current.srcObject = streamObj;
     localVid.current = streamObj;
 
-
-
     ws.current = new WebSocket(`ws://localhost:8080/join_room/${roomID}`);
+
     ws.current.addEventListener('error', (error) => {
       console.log('websocket error', error)
       alert('something went wrong redirecting to home page')
@@ -64,13 +91,21 @@ const Chat = () => {
     ws.current.addEventListener('message', async (msg) => {
       let data = JSON.parse(msg.data);
       switch (data['type']) {
-        case 'join':
+        case 'join': // coming from backend
           callNewUser();
           break;
-        case 'left': 
-          alert('user left chat');
+
+        case 'left': // coming from backend
+          alert("peer left chat")
+          hideRemoteStream();
           break;
-        case 'ice-candidate':
+
+        case 'unauthorized': // coming from backend
+          alert(data["message"])
+          navigate("/")
+          break;
+
+        case 'ice-candidate': // broadcasted from frontend
           console.log('receiving and adding ice candidate');
           try {
             await peerRef.current.addIceCandidate(data['iceCandidate'])
@@ -78,31 +113,20 @@ const Chat = () => {
             console.log('could not add iceCandidate', err)
           }
           break;
+
         case 'offer':
           handleOffer(data['offer'])
+          showRemoteStream();
           break;
+
         case 'answer':
-          peerRef.current.setRemoteDescription(new RTCSessionDescription(data['answer']))
+          peerRef.current.setRemoteDescription(new RTCSessionDescription(data['answer']));
+          showRemoteStream();
           break;
+        default:
+          
       }
     })
-  }
-
-  const handleOffer = async (offer) => {
-    peerRef.current = createPeer();
-    
-    await peerRef.current.setRemoteDescription(new RTCSessionDescription(offer));
-
-    // add user tracks to RTC peer connection
-    localVid.current.getTracks().forEach(track => peerRef.current.addTrack(track, localVid.current))
-
-    const answer = await peerRef.current.createAnswer();
-    await peerRef.current.setLocalDescription(answer)
-
-    ws.current.send(JSON.stringify({
-      type: 'answer',
-      answer: peerRef.current.localDescription,
-    }))
   }
 
   const callNewUser = async () => {
@@ -125,6 +149,23 @@ const Chat = () => {
     peer.addEventListener('track', handleTrack)
 
     return peer
+  }
+
+  const handleOffer = async (offer) => {
+    peerRef.current = createPeer();
+    
+    await peerRef.current.setRemoteDescription(new RTCSessionDescription(offer));
+
+    // add user tracks to RTC peer connection
+    localVid.current.getTracks().forEach(track => peerRef.current.addTrack(track, localVid.current))
+
+    const answer = await peerRef.current.createAnswer();
+    await peerRef.current.setLocalDescription(answer)
+
+    ws.current.send(JSON.stringify({
+      type: 'answer',
+      answer: peerRef.current.localDescription,
+    }))
   }
 
   const handleNegotiations = async () => {
@@ -163,20 +204,20 @@ const Chat = () => {
   return (
     <div className='container-fluid'>
       <div className="row justify-content-between">
-        <div className="col d-flex flex-column justify-content-center align-items-center">
-          <video autoPlay muted ref={localVid} style={{width:'100%'}} />
+        <div className="col d-flex flex-column justify-content-center align-items-center user-video">
+          <video autoPlay ref={localVid} style={{width:'100%'}} />
 
           <div className='device-controls mt-4'>
-            {mic && <i className="bi bi-mic-fill display-3 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleMicrophone}></i>}
-            {!mic && <i className="bi bi-mic-mute-fill display-3 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleMicrophone}></i>}
-            {cam && <i className="bi bi-camera-video-fill display-3 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleCamera}></i>}
-            {!cam && <i className="bi bi-camera-video-off-fill display-3 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleCamera}></i>}
-            <i class="bi bi-telephone-fill display-3 text-light p-3 rounded-circle bg-danger mx-4 device"></i>
+            {mic && <i className="bi bi-mic-fill display-4 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleMicrophone}></i>}
+            {!mic && <i className="bi bi-mic-mute-fill display-4 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleMicrophone}></i>}
+            {cam && <i className="bi bi-camera-video-fill display-4 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleCamera}></i>}
+            {!cam && <i className="bi bi-camera-video-off-fill display-4 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleCamera}></i>}
+            <a href="/"><i className="bi bi-telephone-fill display-4 text-light p-3 rounded-circle bg-danger mx-4 device"></i></a>
           </div>
         </div>
 
         <div className="col d-flex justify-content-center">
-          <video autoPlay muted ref={remoteVid} style={{width:'100%'}} />
+          <video autoPlay ref={remoteVid} style={{width:'100%', display: 'none'}} />
         </div>
       </div>
     </div>

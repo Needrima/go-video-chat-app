@@ -34,8 +34,8 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	roomID := mux.Vars(r)["room_id"]
-	if len(roomID) == 0 {
-		log.Println("invalid id")
+	if !validateID(roomID) {
+		log.Println("connecion refused, invalid id")
 		return
 	}
 
@@ -47,8 +47,14 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("adding connection to room with ID:", roomID)
-	Allroom.AddToRoom(roomID, ws)
+	if err := Allroom.AddToRoom(roomID, ws); err != nil {
+		ws.WriteJSON(map[string]interface{}{
+			"type": "unauthorized",
+			"message": err.Error(),
+		})
+		return
+	}
+
 
 	go func(ws *websocket.Conn, id string) {
 		for {

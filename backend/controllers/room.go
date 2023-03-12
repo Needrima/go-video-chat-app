@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"log"
 	"sync"
 
@@ -48,7 +49,12 @@ func (r *Rooms) CreateRoom() string {
 	return id
 }
 
-func (r *Rooms) AddToRoom(id string, ws *websocket.Conn) {
+func (r *Rooms) AddToRoom(id string, ws *websocket.Conn) error {
+
+	if len(r.rooms[id]) == 2 {
+		log.Println("room already holds maximum participants")
+		return errors.New("room already holds maximum participants")
+	}
 
 	p := Participant{Conn: ws}
 
@@ -60,6 +66,8 @@ func (r *Rooms) AddToRoom(id string, ws *websocket.Conn) {
 
 	log.Println("adding connection to room with ID:", id)
 	r.rooms[id][p] = true
+
+	return nil
 }
 
 type BroadCastMessage struct {

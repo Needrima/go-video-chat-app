@@ -1,5 +1,16 @@
-.device-controls {
-    .device {
-        cursor: pointer;
+.user-video {
+    position: relative;
+
+    .device-controls {
+        position: absolute;
+        bottom: 30px;
+        .device {
+            cursor: pointer;
+        }
+
+        .device:hover {
+            opacity: 0.5;
+            transition: 0.25s ease;
+        }
     }
 }

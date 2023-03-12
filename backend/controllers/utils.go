@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"math/rand"
+	"regexp"
 	"time"
 )
 
@@ -18,4 +19,13 @@ func generateID() string {
 	}
 
 	return id
+}
+
+func validateID(id string) bool {
+	if !regexp.MustCompile(`^[a-zA-Z0-9]{6}$`).MatchString(id) {
+		return false
+	}
+
+	_, ok := Allroom.rooms[id]
+	return ok
 }
