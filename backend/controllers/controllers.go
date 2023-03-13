@@ -49,12 +49,11 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 	if err := Allroom.AddToRoom(roomID, ws); err != nil {
 		ws.WriteJSON(map[string]interface{}{
-			"type": "unauthorized",
+			"type":    "unauthorized",
 			"message": err.Error(),
 		})
 		return
 	}
-
 
 	go func(ws *websocket.Conn, id string) {
 		for {

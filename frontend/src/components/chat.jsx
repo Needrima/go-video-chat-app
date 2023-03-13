@@ -203,9 +203,9 @@ const Chat = () => {
  
   return (
     <div className='container-fluid'>
-      <div className="row justify-content-between">
-        <div className="col d-flex flex-column justify-content-center align-items-center user-video">
-          <video autoPlay ref={localVid} style={{width:'100%'}} />
+      <div className="row position-relative">
+        <div className="col-12 d-flex flex-column m-5 justify-content-center align-items-center user-video">
+          <video className='rounded-pill' autoPlay ref={localVid} style={{width:'100%'}} />
 
           <div className='device-controls mt-4'>
             {mic && <i className="bi bi-mic-fill display-4 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleMicrophone}></i>}
@@ -216,8 +216,8 @@ const Chat = () => {
           </div>
         </div>
 
-        <div className="col d-flex justify-content-center">
-          <video autoPlay ref={remoteVid} style={{width:'100%', display: 'none'}} />
+        <div className="col-3 d-flex m-5 justify-content-center align-items-center position-absolute bottom-0 end-0">
+          <video autoPlay ref={remoteVid} style={{width:'300px', height: '300px', borderRadius: '50%', display: 'none'}} />
         </div>
       </div>
     </div>
