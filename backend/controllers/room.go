@@ -34,7 +34,7 @@ func (r *Rooms) DeleteParticipant(id string, ws *websocket.Conn) {
 
 	for participant, _ := range room {
 		if participant.Conn == ws {
-			log.Println("deleting participant with connection")
+			log.Println("deleting participant with from chat with id:", id)
 			delete(room, participant)
 			return
 		}
@@ -87,7 +87,7 @@ func BroadCastMessageToRoom() {
 		for participant, _ := range room {
 			if participant.Conn != msg.conn {
 				if err := participant.Conn.WriteJSON(msg.msg); err != nil {
-					log.Println("writing to message to connection err:", err)
+					log.Println("writing message to connection error:", err)
 					participant.Conn.Close()
 				}
 			}

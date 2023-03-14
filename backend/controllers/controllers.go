@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -20,10 +19,8 @@ var upgrader = websocket.Upgrader{
 
 func CreateRoom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	log.Println("endpoint hit")
 
 	roomID := Allroom.CreateRoom()
-	log.Println(roomID)
 
 	json.NewEncoder(w).Encode(map[string]string{
 		"roomID": roomID,
@@ -75,8 +72,6 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 
 			msg.conn = ws
 			msg.roomID = roomID
-
-			fmt.Println(msg)
 
 			BroadcastChan <- msg
 		}

@@ -56,11 +56,17 @@ const Chat = () => {
   }
 
   const showRemoteStream = () => {
-    remoteVid.current.style.display = 'block'
+    document.getElementById('remote-video').classList.remove('hidden');
+    document.getElementById('remote-video').classList.add('big-frame');
+    document.getElementById('user-video').classList.remove('big-frame');
+    document.getElementById('user-video').classList.add('small-frame');
   }
 
   const hideRemoteStream = () => {
-    remoteVid.current.style.display = 'none'
+    document.getElementById('remote-video').classList.remove('big-frame');
+    document.getElementById('remote-video').classList.add('hidden');
+    document.getElementById('user-video').classList.remove('small-frame');
+    document.getElementById('user-video').classList.add('big-frame');
   }
   
   useEffect(() => {
@@ -137,20 +143,6 @@ const Chat = () => {
     localVid.current.getTracks().forEach(track => peerRef.current.addTrack(track, localVid.current))
   }
 
-  const createPeer = () => {
-    console.log('creating peer')
-
-    const peer = new RTCPeerConnection({
-      iceServers: [{urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"]}]
-    })
-
-    peer.addEventListener('negotiationneeded', handleNegotiations)
-    peer.addEventListener('icecandidate', handleIceCandidates)
-    peer.addEventListener('track', handleTrack)
-
-    return peer
-  }
-
   const handleOffer = async (offer) => {
     peerRef.current = createPeer();
     
@@ -166,6 +158,20 @@ const Chat = () => {
       type: 'answer',
       answer: peerRef.current.localDescription,
     }))
+  }
+
+  const createPeer = () => {
+    console.log('creating peer')
+
+    const peer = new RTCPeerConnection({
+      iceServers: [{urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"]}]
+    })
+
+    peer.addEventListener('negotiationneeded', handleNegotiations)
+    peer.addEventListener('icecandidate', handleIceCandidates)
+    peer.addEventListener('track', handleTrack)
+
+    return peer
   }
 
   const handleNegotiations = async () => {
@@ -202,25 +208,23 @@ const Chat = () => {
   }
  
   return (
-    <div className='container-fluid'>
-      <div className="row position-relative">
-        <div className="col-12 d-flex flex-column m-5 justify-content-center align-items-center user-video">
-          <video className='rounded-pill' autoPlay ref={localVid} style={{width:'100%'}} />
+    <>
+        <div id="user-video" className='big-frame'>
+          <video autoPlay ref={localVid} />
+        </div>
 
-          <div className='device-controls mt-4'>
+        <div id='remote-video' className='hidden'>
+          <video autoPlay ref={remoteVid} />
+        </div>
+
+        <div className='device-controls mt-4'>
             {mic && <i className="bi bi-mic-fill display-4 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleMicrophone}></i>}
             {!mic && <i className="bi bi-mic-mute-fill display-4 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleMicrophone}></i>}
             {cam && <i className="bi bi-camera-video-fill display-4 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleCamera}></i>}
             {!cam && <i className="bi bi-camera-video-off-fill display-4 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleCamera}></i>}
             <a href="/"><i className="bi bi-telephone-fill display-4 text-light p-3 rounded-circle bg-danger mx-4 device"></i></a>
-          </div>
         </div>
-
-        <div className="col-3 d-flex m-5 justify-content-center align-items-center position-absolute bottom-0 end-0">
-          <video autoPlay ref={remoteVid} style={{width:'300px', height: '300px', borderRadius: '50%', display: 'none'}} />
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 
