@@ -71,11 +71,27 @@ const Chat = () => {
   
   useEffect(() => {
     setupStream();
+
+    return () => {
+      console.log('component is un mounted');
+    }
   }, [])
 
   const setupStream = async () => {
     // setup user camera
-    const streamObj = await navigator.mediaDevices.getUserMedia({audio: true, video:true});
+    const streamObj = await navigator.mediaDevices.getUserMedia({audio: true, video: {
+        width: {
+          min: 640,
+          ideal: 1920,
+          max: 1920,
+        },
+        height: {
+          min: 480,
+          ideal: 1080,
+          max:1080,
+        }
+      }
+    });
     localVid.current.srcObject = streamObj;
     localVid.current = streamObj;
 
@@ -208,14 +224,11 @@ const Chat = () => {
   }
  
   return (
-    <>
-        <div id="user-video" className='big-frame'>
-          <video autoPlay ref={localVid} />
-        </div>
+    <div className='parent'>
 
-        <div id='remote-video' className='hidden'>
-          <video autoPlay ref={remoteVid} />
-        </div>
+        <video id="user-video" className='big-frame' autoPlay ref={localVid} />
+
+        <video id='remote-video' className='hidden' autoPlay ref={remoteVid} />
 
         <div className='device-controls mt-4'>
             {mic && <i className="bi bi-mic-fill display-4 text-light p-3 rounded-circle bg-success mx-4 device" onClick={toggleMicrophone}></i>}
@@ -224,7 +237,7 @@ const Chat = () => {
             {!cam && <i className="bi bi-camera-video-off-fill display-4 text-light p-3 rounded-circle bg-danger mx-4 device" onClick={toggleCamera}></i>}
             <a href="/"><i className="bi bi-telephone-fill display-4 text-light p-3 rounded-circle bg-danger mx-4 device"></i></a>
         </div>
-    </>
+    </div>
   )
 }
 

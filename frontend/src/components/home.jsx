@@ -1,8 +1,8 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
-const Home = (props) => {
+const Home = () => {
     const navigate = useNavigate()
     const [ID, setID] = useState('')
 
@@ -35,6 +35,8 @@ const Home = (props) => {
             <button className='btn btn-outline-primary btn-lg fs-3 border border-3 border-primary'  type='submit' onClick={createRoom}>Create New Room</button>
         </div>
     </div>
+
+    
   )
 }
 
