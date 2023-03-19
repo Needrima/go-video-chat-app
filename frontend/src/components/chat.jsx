@@ -71,10 +71,6 @@ const Chat = () => {
   
   useEffect(() => {
     setupStream();
-
-    return () => {
-      console.log('component is un mounted');
-    }
   }, [])
 
   const setupStream = async () => {

@@ -78,7 +78,8 @@ type BroadCastMessage struct {
 
 var BroadcastChan = make(chan BroadCastMessage)
 
-// BroadCastMessageToRoom listens for any message in BraodcastChan and broadcasts the message to the appropriate room
+// BroadCastMessageToRoom listens for any message in BraodcastChan and broadcasts the message to every connection in the appropriate room 
+// except the connection sending the message
 // . See type BroadCastMessage to know the message formats been sent to BroadcastChan
 func BroadCastMessageToRoom() {
 	for {
