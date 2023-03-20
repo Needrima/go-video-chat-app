@@ -3,7 +3,6 @@ package controllers
 import (
 	"errors"
 	"log"
-	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -14,7 +13,6 @@ type Participant struct {
 }
 
 type Rooms struct {
-	mu    *sync.Mutex
 	rooms map[string]map[Participant]bool
 }
 
@@ -32,7 +30,7 @@ func (r *Rooms) DeleteRoom(id string) {
 func (r *Rooms) DeleteParticipant(id string, ws *websocket.Conn) {
 	room := r.rooms[id]
 
-	for participant, _ := range room {
+	for participant := range room {
 		if participant.Conn == ws {
 			log.Println("deleting participant with from chat with id:", id)
 			delete(room, participant)
@@ -85,7 +83,7 @@ func BroadCastMessageToRoom() {
 	for {
 		msg := <-BroadcastChan
 		room := Allroom.rooms[msg.roomID]
-		for participant, _ := range room {
+		for participant := range room {
 			if participant.Conn != msg.conn {
 				if err := participant.Conn.WriteJSON(msg.msg); err != nil {
 					log.Println("writing message to connection error:", err)
