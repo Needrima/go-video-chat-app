@@ -16,6 +16,7 @@ const Home = () => {
             navigate(`/chat/${data.roomID}`)
         }catch(err) {
             console.log(err)
+            alert('something went wrong, try later');
         }
     }
 
