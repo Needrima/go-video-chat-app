@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"log"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
@@ -13,6 +14,7 @@ type Participant struct {
 }
 
 type Rooms struct {
+	mu sync.Mutex
 	rooms map[string]map[Participant]bool
 }
 
@@ -82,7 +84,9 @@ var BroadcastChan = make(chan BroadCastMessage)
 func BroadCastMessageToRoom() {
 	for {
 		msg := <-BroadcastChan
+		Allroom.mu.Lock()
 		room := Allroom.rooms[msg.roomID]
+		Allroom.mu.Unlock()
 		for participant := range room {
 			if participant.Conn != msg.conn {
 				if err := participant.Conn.WriteJSON(msg.msg); err != nil {

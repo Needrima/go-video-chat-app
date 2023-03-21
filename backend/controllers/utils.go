@@ -26,6 +26,8 @@ func validateID(id string) bool {
 		return false
 	}
 
+	Allroom.mu.Lock()
 	_, ok := Allroom.rooms[id]
+	Allroom.mu.Unlock()
 	return ok
 }
