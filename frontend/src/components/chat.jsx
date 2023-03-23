@@ -134,12 +134,10 @@ const Chat = () => {
 
         case 'offer':
           handleOffer(data['offer'])
-          showRemoteStream();
           break;
 
         case 'answer':
           peerRef.current.setRemoteDescription(new RTCSessionDescription(data['answer']));
-          showRemoteStream();
           break;
         default:
           
@@ -217,6 +215,7 @@ const Chat = () => {
   const handleTrack = (e) => {
     console.log('streams:', e.streams)
     remoteVid.current.srcObject = e.streams[0];
+    showRemoteStream();
   }
  
   return (
