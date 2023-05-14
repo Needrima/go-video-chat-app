@@ -200,9 +200,9 @@ const Chat = () => {
   }
 
   const handleIceCandidates = (e) => {
-    console.log('ice candidate found');
+    // console.log('ice candidate found');
     if (e.candidate) {
-      console.log(e.candidate);
+      // console.log(e.candidate);
 
       ws.current.send(JSON.stringify({
         type: "ice-candidate",
@@ -213,7 +213,9 @@ const Chat = () => {
 
   // fires when there is a new track(audio/video added to to RTC peer connection)
   const handleTrack = (e) => {
-    console.log('streams:', e.streams)
+    console.log('track:', e.track)
+    console.log('video stream:', e.streams[0])
+
     remoteVid.current.srcObject = e.streams[0];
     showRemoteStream();
   }
@@ -221,7 +223,7 @@ const Chat = () => {
   return (
     <div className='parent'>
 
-        <video id="user-video" className='big-frame' autoPlay ref={localVid} />
+        <video id="user-video" className='big-frame' autoPlay ref={localVid}></video>
 
         <video id='remote-video' className='hidden' autoPlay ref={remoteVid} />
 

@@ -71,7 +71,7 @@ func JoinRoom(w http.ResponseWriter, r *http.Request) {
 			}
 
 			msg.conn = ws
-			msg.roomID = roomID
+			msg.roomID = id
 
 			BroadcastChan <- msg
 		}
